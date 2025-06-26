@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { fetchChatResponse } from '@/lib/openai';
 import { createSystemMessage, type ChatMessage } from '@/lib/helpers';
 
@@ -16,19 +17,43 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [inputText, setInputText] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const base64 = await convertToBase64(file);
+        setSelectedImage(base64);
+      } catch (error) {
+        console.error('Error converting file:', error);
+      }
+    }
+  };
 
   const sendMessage = async () => {
-    if (!inputText.trim() || isLoading) return;
+    if ((!inputText.trim() && !selectedImage) || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputText.trim(),
+      text: inputText.trim() || "Bu görselde ne görüyorsun?",
+      image: selectedImage || undefined,
       sender: 'user',
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
+    setSelectedImage(null);
     setIsLoading(true);
 
     try {
@@ -62,11 +87,27 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
           role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
           content: msg.text!,
         })),
-        {
-          role: 'user' as const,
-          content: inputText.trim(),
-        }
       ];
+
+      if (userMessage.text || userMessage.image) {
+        const content: Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = [];
+        
+        if (userMessage.text) {
+          content.push({ type: 'text', text: userMessage.text });
+        }
+        
+        if (userMessage.image) {
+          content.push({ 
+            type: 'image_url', 
+            image_url: { url: userMessage.image } 
+          });
+        }
+        
+        apiMessages.push({
+          role: 'user',
+          content: content
+        });
+      }
 
       const response = await fetchChatResponse(apiMessages);
       
@@ -99,10 +140,6 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setInputText(suggestion);
-  };
-
   const styles = {
     container: {
       display: 'flex',
@@ -118,7 +155,7 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
       alignItems: 'center',
       padding: '2rem',
     },
-    askAiSection: {
+    logoSection: {
       backgroundColor: '#ffffff',
       borderRadius: '12px',
       padding: '2.5rem',
@@ -128,15 +165,26 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
       maxWidth: '700px',
       marginBottom: '2rem',
     },
-    askAiTitle: {
-      fontSize: '2.5rem',
-      color: '#333',
-      marginBottom: '1.5rem',
-    },
     inputContainer: {
       display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
       width: '100%',
+      gap: '10px',
+    },
+    fileButton: {
+      backgroundColor: '#f8f9fa',
+      border: '1px solid #ddd',
+      borderRadius: '50%',
+      width: '45px',
+      height: '45px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'background-color 0.3s ease',
+      fontSize: '20px',
+      color: '#666',
     },
     textInput: {
       flex: 1,
@@ -144,7 +192,6 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
       fontSize: '1.1rem',
       borderRadius: '25px',
       border: '1px solid #ddd',
-      marginRight: '10px',
       outline: 'none',
       boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.06)',
     },
@@ -202,39 +249,6 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
       opacity: 0.7,
       marginTop: '0.3rem',
     },
-    suggestionsSection: {
-      backgroundColor: '#ffffff',
-      borderRadius: '12px',
-      padding: '2.5rem',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-      width: '100%',
-      maxWidth: '700px',
-    },
-    suggestionsTitle: {
-      fontSize: '1.8rem',
-      color: '#333',
-      marginBottom: '1.5rem',
-      textAlign: 'center' as const,
-    },
-    suggestionsList: {
-      listStyle: 'none',
-      padding: 0,
-      margin: 0,
-    },
-    suggestionItem: {
-      backgroundColor: '#f9f9f9',
-      border: '1px solid #eee',
-      borderRadius: '8px',
-      padding: '1rem 1.5rem',
-      marginBottom: '1rem',
-      cursor: 'pointer',
-      transition: 'background-color 0.2s ease, transform 0.2s ease',
-    },
-    suggestionText: {
-      fontSize: '1.1rem',
-      color: '#555',
-      margin: 0,
-    },
     footer: {
       textAlign: 'center' as const,
       padding: '1.5rem',
@@ -251,18 +265,76 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
       color: '#666',
       fontStyle: 'italic' as const,
     },
+    imagePreview: {
+      marginTop: '1rem',
+      position: 'relative' as const,
+      display: 'inline-block',
+    },
+    removeImageButton: {
+      position: 'absolute' as const,
+      top: '-8px',
+      right: '-8px',
+      backgroundColor: '#ff4757',
+      color: 'white',
+      border: 'none',
+      borderRadius: '50%',
+      width: '24px',
+      height: '24px',
+      cursor: 'pointer',
+      fontSize: '14px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   };
 
   return (
     <div style={styles.container}>
       <main style={styles.main}>
-        {/* Üst Kısım: AI'ya Her Şeyi Sorun */}
-        <section style={styles.askAiSection}>
-          <h1 style={styles.askAiTitle}>Ask our AI anything</h1>
+        {/* Logo Bölümü */}
+        <section style={styles.logoSection}>
+          <Image
+            src="/logo.png"
+            alt="LC Waikiki OneSearch"
+            width={300}
+            height={120}
+            style={{ marginBottom: '1.5rem' }}
+          />
+          
+          {/* Dosya Önizleme */}
+          {selectedImage && (
+            <div style={styles.imagePreview}>
+              <Image 
+                src={selectedImage} 
+                alt="Yüklenecek dosya" 
+                width={200}
+                height={150}
+                style={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+              />
+              <button
+                style={styles.removeImageButton}
+                onClick={() => setSelectedImage(null)}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
           <div style={styles.inputContainer}>
+            {/* Dosya Ekleme Butonu */}
+            <label style={styles.fileButton}>
+              +
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+              />
+            </label>
+
             <input
               type="text"
-              placeholder="What can I ask you to do?"
+              placeholder="Size nasıl yardımcı olabilirim?"
               style={styles.textInput}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
@@ -272,7 +344,7 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
             <button 
               style={styles.sendButton} 
               onClick={sendMessage}
-              disabled={isLoading || !inputText.trim()}
+              disabled={isLoading || (!inputText.trim() && !selectedImage)}
               onMouseEnter={(e) => {
                 if (!e.currentTarget.disabled) {
                   e.currentTarget.style.backgroundColor = '#005bb5';
@@ -284,7 +356,7 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
                 }
               }}
             >
-              {isLoading ? 'Gönderiliyor...' : 'Sor'}
+              {isLoading ? 'Gönderiliyor...' : 'Gönder'}
             </button>
           </div>
         </section>
@@ -301,6 +373,17 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
                     ...(msg.sender === 'user' ? styles.userMessage : styles.assistantMessage)
                   }}
                 >
+                  {msg.image && (
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <Image 
+                        src={msg.image} 
+                        alt="Gönderilen görsel" 
+                        width={150}
+                        height={100}
+                        style={{ borderRadius: '6px' }}
+                      />
+                    </div>
+                  )}
                   <div>{msg.text}</div>
                   <div style={styles.timestamp}>
                     {msg.timestamp.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
@@ -334,55 +417,6 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
             </button>
           </section>
         )}
-
-        {/* Öneriler Kısmı */}
-        <section style={styles.suggestionsSection}>
-          <h2 style={styles.suggestionsTitle}>Suggestions on what to ask Our AI</h2>
-          <ul style={styles.suggestionsList}>
-            <li 
-              style={styles.suggestionItem}
-              onClick={() => handleSuggestionClick("Which one of my projects is performing the best?")}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#eef';
-                e.currentTarget.style.transform = 'translateY(-3px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#f9f9f9';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <p style={styles.suggestionText}>Which one of my projects is performing the best?</p>
-            </li>
-            <li 
-              style={styles.suggestionItem}
-              onClick={() => handleSuggestionClick("What projects should I be concerned about right now?")}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#eef';
-                e.currentTarget.style.transform = 'translateY(-3px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#f9f9f9';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <p style={styles.suggestionText}>What projects should I be concerned about right now?</p>
-            </li>
-            <li 
-              style={{...styles.suggestionItem, marginBottom: 0}}
-              onClick={() => handleSuggestionClick("Ask me anything about your projects")}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#eef';
-                e.currentTarget.style.transform = 'translateY(-3px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#f9f9f9';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <p style={styles.suggestionText}>Ask me anything about your projects</p>
-            </li>
-          </ul>
-        </section>
       </main>
 
       <footer style={styles.footer}>
