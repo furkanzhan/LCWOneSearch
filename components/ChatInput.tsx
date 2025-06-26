@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, KeyboardEvent } from 'react';
+import Image from 'next/image';
 
 interface ChatInputProps {
   onSend: (data: { text: string; image?: string }) => void;
@@ -76,10 +77,12 @@ export default function ChatInput({
       {/* Görsel Önizleme */}
       {selectedImage && (
         <div className="mb-4 relative">
-          <img 
+          <Image 
             src={selectedImage} 
             alt="Yüklenecek görsel" 
-            className="max-w-[200px] max-h-[120px] object-cover rounded-lg shadow-md"
+            width={200}
+            height={120}
+            className="object-cover rounded-lg shadow-md"
           />
           <button
             onClick={removeImage}

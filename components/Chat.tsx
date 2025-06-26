@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { fetchChatResponse } from '@/lib/openai';
-import { createSystemMessage, createUserMessage, type ChatMessage } from '@/lib/helpers';
+import { createSystemMessage, type ChatMessage } from '@/lib/helpers';
 import ChatInput from './ChatInput';
 
 interface Message {
@@ -47,7 +48,7 @@ export default function Chat() {
 
       // Mevcut mesaj için content hazırla
       if (data.text || data.image) {
-        const content: any[] = [];
+        const content: Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = [];
         
         if (data.text) {
           content.push({ type: 'text', text: data.text });
@@ -115,7 +116,7 @@ export default function Chat() {
           /* Mesajlar var - özel pencere içinde */
           <div className="bg-gray-50 border-2 border-gray-200 rounded-[20px] p-6 min-h-[400px] max-h-[600px] w-full overflow-y-auto">
             <div className="pt-8 pb-8">
-              {messages.map((msg, index) => (
+              {messages.map((msg) => (
                 <div key={msg.id} className="mb-6 mt-6">
                   {msg.sender === 'user' ? (
                     /* Kullanıcı Sorusu - Sağda */
@@ -123,10 +124,12 @@ export default function Chat() {
                       <div className="bg-[#1c2938] text-white p-4 rounded-[20px] max-w-[60%]">
                         {msg.image && (
                           <div className="mb-2">
-                            <img 
+                            <Image 
                               src={msg.image} 
                               alt="Yüklenen görsel" 
-                              className="max-w-[200px] max-h-[150px] object-cover rounded-lg" 
+                              width={200}
+                              height={150}
+                              className="object-cover rounded-lg" 
                             />
                           </div>
                         )}

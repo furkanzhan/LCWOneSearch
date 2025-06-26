@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import Image from 'next/image';
 import { fetchChatResponse } from '@/lib/openai';
 import { createSystemMessage, type ChatMessage } from '@/lib/helpers';
 
@@ -84,7 +85,7 @@ export default function FabricSearchEngine() {
       ];
 
       if (userMessage.text || userMessage.image) {
-        const content: any[] = [];
+        const content: Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = [];
         
         if (userMessage.text) {
           content.push({ type: 'text', text: userMessage.text });
@@ -142,10 +143,12 @@ export default function FabricSearchEngine() {
         
         {/* Logo */}
         <div className="text-center mb-12">
-          <img
+          <Image
             src="/logo.png"
             alt="LCW OneSearch"
-            className="w-[250px] h-auto mx-auto mb-4"
+            width={250}
+            height={100}
+            className="mx-auto mb-4"
           />
           <p className="text-gray-300 text-lg">AI destekli ürün arama</p>
         </div>
@@ -192,10 +195,12 @@ export default function FabricSearchEngine() {
           {selectedImage && (
             <div className="mt-4 text-center">
               <div className="inline-block relative">
-                <img
+                <Image
                   src={selectedImage}
                   alt="Önizleme"
-                  className="max-w-[200px] max-h-[150px] object-cover rounded-lg shadow-md"
+                  width={200}
+                  height={150}
+                  className="object-cover rounded-lg shadow-md"
                 />
                 <button
                   onClick={() => setSelectedImage(null)}
@@ -232,10 +237,12 @@ export default function FabricSearchEngine() {
                     }`}>
                       {msg.image && (
                         <div className="mb-2">
-                          <img 
+                          <Image 
                             src={msg.image} 
                             alt="Görsel" 
-                            className="max-w-[150px] max-h-[100px] object-cover rounded" 
+                            width={150}
+                            height={100}
+                            className="object-cover rounded" 
                           />
                         </div>
                       )}
