@@ -21,7 +21,6 @@ export default function Chat() {
   const sendMessageToOpenAI = async (data: { text: string; image?: string }) => {
     if ((!data.text.trim() && !data.image) || isLoading) return;
 
-    // Kullanıcı mesajını ekle
     const userMessage: Message = {
       id: Date.now().toString(),
       text: data.text,
@@ -34,7 +33,6 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      // Prepare messages for API call
       const apiMessages: ChatMessage[] = [
         createSystemMessage(
           `Sen LC Waikiki OneSearch asistanısın. LC Waikiki ofisinde çalışan personele yardım ediyorsun.
@@ -61,14 +59,12 @@ VEDA:
 
 Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asistanısın.`
         ),
-        // Add all previous text messages to maintain context
         ...messages.filter(msg => msg.text).map((msg) => ({
           role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
           content: msg.text!,
         })),
       ];
 
-      // Mevcut mesaj için content hazırla
       if (data.text || data.image) {
         const content: Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = [];
         
@@ -89,7 +85,6 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
         });
       }
 
-      // Call the API
       const response = await fetchChatResponse(apiMessages);
       
       const assistantMessage: Message = {
@@ -115,159 +110,98 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
   };
 
   return (
-    <div className="w-full max-w-4xl flex flex-col bg-[#1c2938] min-h-screen">
-      {/* Arama Çubuğu */}
-      <div className="w-full mb-10 flex justify-center items-center">
-        <div className="flex items-center bg-white rounded-full shadow-md">
-          <ChatInput 
-            onSend={sendMessageToOpenAI} 
-            disabled={isLoading} 
-            placeholder="Size nasıl yardımcı olabilirim?" 
-          />
-        </div>
+    <div className="w-full max-w-4xl mx-auto bg-[#1c2938] min-h-screen flex flex-col">
+      
+      {/* Chat Input Alanı */}
+      <div className="p-6">
+        <ChatInput 
+          onSend={sendMessageToOpenAI} 
+          disabled={isLoading} 
+          placeholder="Size nasıl yardımcı olabilirim?" 
+        />
       </div>
 
-      {/* Chat Container - Messenger Tarzı */}
-      <div className="bg-gradient-to-b from-gray-50 to-gray-100 w-[900px] min-h-[600px] rounded-2xl mx-auto shadow-xl border border-gray-200 flex flex-col">
+      {/* Chat Mesajları */}
+      <div className="flex-1 bg-white mx-6 mb-6 rounded-xl shadow-lg">
         
         {/* Chat Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
+        <div className="bg-blue-600 text-white p-4 rounded-t-xl">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">LC Waikiki OneSearch Asistan</h2>
-              <p className="text-sm text-gray-500">
-                {isLoading ? 'Yazıyor...' : 'Ofis personeli için yardımcı asistan'}
-              </p>
+              <h2 className="text-lg font-semibold">LC Waikiki OneSearch</h2>
+              <p className="text-blue-100 text-sm">Ofis Asistanı</p>
             </div>
             {messages.length > 0 && (
               <button
                 onClick={() => setMessages([])}
-                className="text-gray-400 hover:text-gray-600 text-sm px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                className="text-blue-100 hover:text-white px-3 py-1 rounded hover:bg-blue-500 transition-colors text-sm"
               >
-                Sohbeti Temizle
+                Temizle
               </button>
             )}
           </div>
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 p-6 overflow-y-auto max-h-[500px]">
+        {/* Mesajlar Alanı */}
+        <div className="h-96 overflow-y-auto p-4 bg-gray-50">
           {messages.length === 0 ? (
-            /* Boş durum */
-            <div className="flex flex-col items-center justify-center h-full text-center py-16">
-              <div className="bg-blue-50 p-6 rounded-full mb-4">
-                <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-medium text-gray-700 mb-2">LC Waikiki OneSearch Asistan</h3>
-              <p className="text-gray-500">Ürün takibi, dosya yönetimi ve iş süreçleri için yardımcınız</p>
-              
-              {/* Öneri Butonları */}
-              <div className="mt-6 flex flex-wrap gap-3 justify-center">
-                <button 
-                  onClick={() => sendMessageToOpenAI({ text: 'Merhaba' })}
-                  className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
-                >
-                  👋 Merhaba
-                </button>
-                <button 
-                  onClick={() => sendMessageToOpenAI({ text: 'Ürün takibi nasıl yapılır?' })}
-                  className="px-4 py-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors"
-                >
-                  📦 Ürün Takibi
-                </button>
-                <button 
-                  onClick={() => sendMessageToOpenAI({ text: 'Dosya yönetimi hakkında bilgi' })}
-                  className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full hover:bg-yellow-200 transition-colors"
-                >
-                  📁 Dosya Yönetimi
-                </button>
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center text-gray-500">
+                <div className="mb-4">
+                  <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <p className="text-lg">Sohbet başlatmak için bir mesaj yazın</p>
               </div>
             </div>
           ) : (
-            /* Mesajlar */
             <div className="space-y-4">
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                   
-                  {/* AI Avatar */}
-                  {msg.sender === 'assistant' && (
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Message Bubble */}
-                  <div className={`max-w-[70%] ${msg.sender === 'user' ? 'order-1' : 'order-2'}`}>
-                    <div className={`px-4 py-3 rounded-2xl ${
-                      msg.sender === 'user' 
-                        ? 'bg-blue-500 text-white rounded-br-md' 
-                        : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md'
-                    }`}>
-                      
-                      {/* Image */}
-                      {msg.image && (
-                        <div className="mb-3">
-                          <Image 
-                            src={msg.image} 
-                            alt="Yüklenen görsel" 
-                            width={200}
-                            height={150}
-                            className="object-cover rounded-lg" 
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Text */}
-                      {msg.text && (
-                        <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                          {msg.text}
-                        </div>
-                      )}
-                    </div>
+                  <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    msg.sender === 'user' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-white border border-gray-200 text-gray-800'
+                  }`}>
                     
-                    {/* Timestamp */}
-                    <div className={`text-xs text-gray-400 mt-1 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
-                      {msg.timestamp.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-
-                  {/* User Avatar */}
-                  {msg.sender === 'user' && (
-                    <div className="flex-shrink-0 ml-3 order-2">
-                      <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+                    {msg.image && (
+                      <div className="mb-2">
+                        <Image 
+                          src={msg.image} 
+                          alt="Yüklenen görsel" 
+                          width={200}
+                          height={150}
+                          className="rounded object-cover" 
+                        />
                       </div>
-                    </div>
-                  )}
+                    )}
+                    
+                    {msg.text && (
+                      <p className="text-sm">{msg.text}</p>
+                    )}
+                    
+                    <p className={`text-xs mt-1 ${
+                      msg.sender === 'user' ? 'text-blue-100' : 'text-gray-400'
+                    }`}>
+                      {msg.timestamp.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  
                 </div>
               ))}
               
-              {/* Typing Indicator */}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="flex-shrink-0 mr-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm border border-gray-100">
+                  <div className="bg-white border border-gray-200 text-gray-800 px-4 py-2 rounded-lg">
                     <div className="flex items-center space-x-2">
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                       </div>
-                      <span className="text-gray-500 text-sm">Yazıyor...</span>
+                      <span className="text-sm text-gray-500">Yazıyor...</span>
                     </div>
                   </div>
                 </div>
