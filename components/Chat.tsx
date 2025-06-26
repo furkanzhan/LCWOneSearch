@@ -99,6 +99,10 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
     }
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setInputText(suggestion);
+  };
+
   const styles = {
     container: {
       display: 'flex',
@@ -223,6 +227,8 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
       borderRadius: '8px',
       padding: '1rem 1.5rem',
       marginBottom: '1rem',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s ease, transform 0.2s ease',
     },
     suggestionText: {
       fontSize: '1.1rem',
@@ -250,13 +256,13 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
   return (
     <div style={styles.container}>
       <main style={styles.main}>
-        {/* Üst Kısım: LC Waikiki OneSearch */}
+        {/* Üst Kısım: AI'ya Her Şeyi Sorun */}
         <section style={styles.askAiSection}>
-          <h1 style={styles.askAiTitle}>LC Waikiki OneSearch</h1>
+          <h1 style={styles.askAiTitle}>Ask our AI anything</h1>
           <div style={styles.inputContainer}>
             <input
               type="text"
-              placeholder="Size nasıl yardımcı olabilirim?"
+              placeholder="What can I ask you to do?"
               style={styles.textInput}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
@@ -267,8 +273,18 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
               style={styles.sendButton} 
               onClick={sendMessage}
               disabled={isLoading || !inputText.trim()}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = '#005bb5';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled) {
+                  e.currentTarget.style.backgroundColor = '#0070f3';
+                }
+              }}
             >
-              {isLoading ? 'Gönderiliyor...' : 'Gönder'}
+              {isLoading ? 'Gönderiliyor...' : 'Sor'}
             </button>
           </div>
         </section>
@@ -307,6 +323,12 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
                 fontSize: '0.9rem',
                 padding: '0.5rem 1rem',
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#5a6268';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#6c757d';
+              }}
             >
               Sohbeti Temizle
             </button>
@@ -315,23 +337,56 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
 
         {/* Öneriler Kısmı */}
         <section style={styles.suggestionsSection}>
-          <h2 style={styles.suggestionsTitle}>LC Waikiki Ofis Asistanı ile Neler Yapabilirsiniz?</h2>
+          <h2 style={styles.suggestionsTitle}>Suggestions on what to ask Our AI</h2>
           <ul style={styles.suggestionsList}>
-            <li style={styles.suggestionItem}>
-              <p style={styles.suggestionText}>Ürün takibi ve stok durumu sorgulama</p>
+            <li 
+              style={styles.suggestionItem}
+              onClick={() => handleSuggestionClick("Which one of my projects is performing the best?")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#eef';
+                e.currentTarget.style.transform = 'translateY(-3px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f9f9f9';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <p style={styles.suggestionText}>Which one of my projects is performing the best?</p>
             </li>
-            <li style={styles.suggestionItem}>
-              <p style={styles.suggestionText}>Dosya organizasyonu ve iş süreçleri hakkında rehberlik</p>
+            <li 
+              style={styles.suggestionItem}
+              onClick={() => handleSuggestionClick("What projects should I be concerned about right now?")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#eef';
+                e.currentTarget.style.transform = 'translateY(-3px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f9f9f9';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <p style={styles.suggestionText}>What projects should I be concerned about right now?</p>
             </li>
-            <li style={styles.suggestionItem}>
-              <p style={styles.suggestionText}>Genel ofis işleri ve günlük görevler hakkında destek</p>
+            <li 
+              style={{...styles.suggestionItem, marginBottom: 0}}
+              onClick={() => handleSuggestionClick("Ask me anything about your projects")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#eef';
+                e.currentTarget.style.transform = 'translateY(-3px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f9f9f9';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <p style={styles.suggestionText}>Ask me anything about your projects</p>
             </li>
           </ul>
         </section>
       </main>
 
       <footer style={styles.footer}>
-        <p>&copy; 2025 LC Waikiki OneSearch - Ofis Asistanı</p>
+        <p>&copy; 2025 LC Waikiki OneSearch - AI Asistanı</p>
       </footer>
     </div>
   );

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LCW OneSearch",
-  description: "AI-powered search and chat application",
+  title: "LC Waikiki OneSearch",
+  description: "AI Sohbet Asistanı Projesi",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body className="bg-[#1e2a38] text-white font-sans antialiased">
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>
