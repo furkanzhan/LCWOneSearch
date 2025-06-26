@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { fetchChatResponse } from '@/lib/openai';
 import { createSystemMessage, type ChatMessage } from '@/lib/helpers';
 
