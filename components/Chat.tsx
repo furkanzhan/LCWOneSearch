@@ -296,8 +296,8 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
           <Image
             src="/logo.png"
             alt="LC Waikiki OneSearch"
-            width={300}
-            height={120}
+            width={400}
+            height={160}
             style={{ marginBottom: '1.5rem' }}
           />
           
