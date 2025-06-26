@@ -7,6 +7,7 @@ export interface ChatMessage {
       url: string;
     };
   }>;
+  image?: string; // Base64 veya URL
 }
 
 // Helper functions for creating message objects
@@ -38,5 +39,6 @@ export function createUserMessageWithImage(text: string, imageBase64: string): C
       { type: 'text', text },
       { type: 'image_url', image_url: { url: imageBase64 } }
     ],
+    image: imageBase64,
   };
 } 
