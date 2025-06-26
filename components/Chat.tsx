@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { fetchChatResponse } from '@/lib/openai';
 import { createSystemMessage, type ChatMessage } from '@/lib/helpers';
-import ChatInput from './ChatInput';
 
 interface Message {
   id: string;
@@ -17,19 +16,20 @@ interface Message {
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [inputText, setInputText] = useState('');
 
-  const sendMessageToOpenAI = async (data: { text: string; image?: string }) => {
-    if ((!data.text.trim() && !data.image) || isLoading) return;
+  const sendMessage = async () => {
+    if (!inputText.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: data.text,
-      image: data.image,
+      text: inputText.trim(),
       sender: 'user',
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
+    setInputText('');
     setIsLoading(true);
 
     try {
@@ -63,27 +63,11 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
           role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
           content: msg.text!,
         })),
+        {
+          role: 'user' as const,
+          content: inputText.trim(),
+        }
       ];
-
-      if (data.text || data.image) {
-        const content: Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = [];
-        
-        if (data.text) {
-          content.push({ type: 'text', text: data.text });
-        }
-        
-        if (data.image) {
-          content.push({ 
-            type: 'image_url', 
-            image_url: { url: data.image } 
-          });
-        }
-        
-        apiMessages.push({
-          role: 'user',
-          content: content
-        });
-      }
 
       const response = await fetchChatResponse(apiMessages);
       
@@ -109,107 +93,247 @@ Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asist
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const styles = {
+    container: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      minHeight: '100vh',
+      backgroundColor: '#f0f2f5',
+      fontFamily: 'Arial, sans-serif',
+    },
+    main: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      padding: '2rem',
+    },
+    askAiSection: {
+      backgroundColor: '#ffffff',
+      borderRadius: '12px',
+      padding: '2.5rem',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+      textAlign: 'center' as const,
+      width: '100%',
+      maxWidth: '700px',
+      marginBottom: '2rem',
+    },
+    askAiTitle: {
+      fontSize: '2.5rem',
+      color: '#333',
+      marginBottom: '1.5rem',
+    },
+    inputContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100%',
+    },
+    textInput: {
+      flex: 1,
+      padding: '0.8rem 1.2rem',
+      fontSize: '1.1rem',
+      borderRadius: '25px',
+      border: '1px solid #ddd',
+      marginRight: '10px',
+      outline: 'none',
+      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.06)',
+    },
+    sendButton: {
+      backgroundColor: '#0070f3',
+      color: 'white',
+      border: 'none',
+      borderRadius: '25px',
+      padding: '0.8rem 1.8rem',
+      fontSize: '1.1rem',
+      cursor: 'pointer',
+      transition: 'background-color 0.3s ease',
+    },
+    chatSection: {
+      backgroundColor: '#ffffff',
+      borderRadius: '12px',
+      padding: '2.5rem',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+      width: '100%',
+      maxWidth: '700px',
+      marginBottom: '2rem',
+    },
+    chatArea: {
+      maxHeight: '400px',
+      overflowY: 'auto' as const,
+      marginBottom: '1rem',
+      padding: '1rem',
+      backgroundColor: '#f9f9f9',
+      borderRadius: '8px',
+      border: '1px solid #eee',
+    },
+    message: {
+      marginBottom: '1rem',
+      padding: '0.8rem 1.2rem',
+      borderRadius: '8px',
+      fontSize: '1rem',
+    },
+    userMessage: {
+      backgroundColor: '#0070f3',
+      color: 'white',
+      marginLeft: 'auto',
+      marginRight: '0',
+      maxWidth: '80%',
+      textAlign: 'right' as const,
+    },
+    assistantMessage: {
+      backgroundColor: '#e9ecef',
+      color: '#333',
+      marginLeft: '0',
+      marginRight: 'auto',
+      maxWidth: '80%',
+    },
+    timestamp: {
+      fontSize: '0.8rem',
+      opacity: 0.7,
+      marginTop: '0.3rem',
+    },
+    suggestionsSection: {
+      backgroundColor: '#ffffff',
+      borderRadius: '12px',
+      padding: '2.5rem',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+      width: '100%',
+      maxWidth: '700px',
+    },
+    suggestionsTitle: {
+      fontSize: '1.8rem',
+      color: '#333',
+      marginBottom: '1.5rem',
+      textAlign: 'center' as const,
+    },
+    suggestionsList: {
+      listStyle: 'none',
+      padding: 0,
+      margin: 0,
+    },
+    suggestionItem: {
+      backgroundColor: '#f9f9f9',
+      border: '1px solid #eee',
+      borderRadius: '8px',
+      padding: '1rem 1.5rem',
+      marginBottom: '1rem',
+    },
+    suggestionText: {
+      fontSize: '1.1rem',
+      color: '#555',
+      margin: 0,
+    },
+    footer: {
+      textAlign: 'center' as const,
+      padding: '1.5rem',
+      marginTop: 'auto',
+      color: '#777',
+      fontSize: '0.9rem',
+      borderTop: '1px solid #eee',
+      backgroundColor: '#fff',
+    },
+    loadingIndicator: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      color: '#666',
+      fontStyle: 'italic' as const,
+    },
+  };
+
   return (
-    <div className="w-full max-w-4xl mx-auto bg-[#1c2938] min-h-screen flex flex-col">
-      
-      {/* Chat Input Alanı */}
-      <div className="p-6">
-        <ChatInput 
-          onSend={sendMessageToOpenAI} 
-          disabled={isLoading} 
-          placeholder="Size nasıl yardımcı olabilirim?" 
-        />
-      </div>
-
-      {/* Chat Mesajları */}
-      <div className="flex-1 bg-white mx-6 mb-6 rounded-xl shadow-lg">
-        
-        {/* Chat Header */}
-        <div className="bg-blue-600 text-white p-4 rounded-t-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">LC Waikiki OneSearch</h2>
-              <p className="text-blue-100 text-sm">Ofis Asistanı</p>
-            </div>
-            {messages.length > 0 && (
-              <button
-                onClick={() => setMessages([])}
-                className="text-blue-100 hover:text-white px-3 py-1 rounded hover:bg-blue-500 transition-colors text-sm"
-              >
-                Temizle
-              </button>
-            )}
+    <div style={styles.container}>
+      <main style={styles.main}>
+        {/* Üst Kısım: LC Waikiki OneSearch */}
+        <section style={styles.askAiSection}>
+          <h1 style={styles.askAiTitle}>LC Waikiki OneSearch</h1>
+          <div style={styles.inputContainer}>
+            <input
+              type="text"
+              placeholder="Size nasıl yardımcı olabilirim?"
+              style={styles.textInput}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
+            />
+            <button 
+              style={styles.sendButton} 
+              onClick={sendMessage}
+              disabled={isLoading || !inputText.trim()}
+            >
+              {isLoading ? 'Gönderiliyor...' : 'Gönder'}
+            </button>
           </div>
-        </div>
+        </section>
 
-        {/* Mesajlar Alanı */}
-        <div className="h-96 overflow-y-auto p-4 bg-gray-50">
-          {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center text-gray-500">
-                <div className="mb-4">
-                  <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <p className="text-lg">Sohbet başlatmak için bir mesaj yazın</p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
+        {/* Chat Mesajları */}
+        {messages.length > 0 && (
+          <section style={styles.chatSection}>
+            <div style={styles.chatArea}>
               {messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  
-                  <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    msg.sender === 'user' 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-white border border-gray-200 text-gray-800'
-                  }`}>
-                    
-                    {msg.image && (
-                      <div className="mb-2">
-                        <Image 
-                          src={msg.image} 
-                          alt="Yüklenen görsel" 
-                          width={200}
-                          height={150}
-                          className="rounded object-cover" 
-                        />
-                      </div>
-                    )}
-                    
-                    {msg.text && (
-                      <p className="text-sm">{msg.text}</p>
-                    )}
-                    
-                    <p className={`text-xs mt-1 ${
-                      msg.sender === 'user' ? 'text-blue-100' : 'text-gray-400'
-                    }`}>
-                      {msg.timestamp.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                <div 
+                  key={msg.id} 
+                  style={{
+                    ...styles.message,
+                    ...(msg.sender === 'user' ? styles.userMessage : styles.assistantMessage)
+                  }}
+                >
+                  <div>{msg.text}</div>
+                  <div style={styles.timestamp}>
+                    {msg.timestamp.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                   </div>
-                  
                 </div>
               ))}
               
               {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-white border border-gray-200 text-gray-800 px-4 py-2 rounded-lg">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                      </div>
-                      <span className="text-sm text-gray-500">Yazıyor...</span>
-                    </div>
-                  </div>
+                <div style={styles.loadingIndicator}>
+                  <span>⏳ Asistan yazıyor...</span>
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
+            
+            <button 
+              onClick={() => setMessages([])}
+              style={{
+                ...styles.sendButton,
+                backgroundColor: '#6c757d',
+                fontSize: '0.9rem',
+                padding: '0.5rem 1rem',
+              }}
+            >
+              Sohbeti Temizle
+            </button>
+          </section>
+        )}
+
+        {/* Öneriler Kısmı */}
+        <section style={styles.suggestionsSection}>
+          <h2 style={styles.suggestionsTitle}>LC Waikiki Ofis Asistanı ile Neler Yapabilirsiniz?</h2>
+          <ul style={styles.suggestionsList}>
+            <li style={styles.suggestionItem}>
+              <p style={styles.suggestionText}>Ürün takibi ve stok durumu sorgulama</p>
+            </li>
+            <li style={styles.suggestionItem}>
+              <p style={styles.suggestionText}>Dosya organizasyonu ve iş süreçleri hakkında rehberlik</p>
+            </li>
+            <li style={styles.suggestionItem}>
+              <p style={styles.suggestionText}>Genel ofis işleri ve günlük görevler hakkında destek</p>
+            </li>
+          </ul>
+        </section>
+      </main>
+
+      <footer style={styles.footer}>
+        <p>&copy; 2025 LC Waikiki OneSearch - Ofis Asistanı</p>
+      </footer>
     </div>
   );
 } 
