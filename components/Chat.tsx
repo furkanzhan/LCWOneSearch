@@ -105,69 +105,132 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* Chat Sayfası - Her zaman görünür */}
-      <div className="bg-white w-[800px] min-h-[500px] p-8 rounded-[30px] mx-auto shadow-lg flex-1">
-        {messages.length === 0 ? (
-          /* Boş durum - henüz mesaj yok */
-          <div className="flex items-center justify-center h-full text-gray-400">
-            <p>Konuşmaya başlamak için bir mesaj yazın...</p>
+      {/* Chat Container - Messenger Tarzı */}
+      <div className="bg-gradient-to-b from-gray-50 to-gray-100 w-[900px] min-h-[600px] rounded-2xl mx-auto shadow-xl border border-gray-200 flex flex-col">
+        
+        {/* Chat Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">LCW OneSearch AI</h2>
+              <p className="text-sm text-gray-500">
+                {isLoading ? 'Yazıyor...' : 'Çevrimiçi'}
+              </p>
+            </div>
+            {messages.length > 0 && (
+              <button
+                onClick={() => setMessages([])}
+                className="text-gray-400 hover:text-gray-600 text-sm px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Sohbeti Temizle
+              </button>
+            )}
           </div>
-        ) : (
-          /* Mesajlar var - özel pencere içinde */
-          <div className="bg-gray-50 border-2 border-gray-200 rounded-[20px] p-6 min-h-[400px] max-h-[600px] w-full overflow-y-auto">
-            <div className="pt-8 pb-8">
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 p-6 overflow-y-auto max-h-[500px]">
+          {messages.length === 0 ? (
+            /* Boş durum */
+            <div className="flex flex-col items-center justify-center h-full text-center py-16">
+              <div className="bg-blue-50 p-6 rounded-full mb-4">
+                <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-medium text-gray-700 mb-2">Merhaba! Size nasıl yardımcı olabilirim?</h3>
+              <p className="text-gray-500">Ürün arama yapabilir, moda önerileri alabilir ve sorularınızı sorabilirsiniz.</p>
+            </div>
+          ) : (
+            /* Mesajlar */
+            <div className="space-y-4">
               {messages.map((msg) => (
-                <div key={msg.id} className="mb-6 mt-6">
-                  {msg.sender === 'user' ? (
-                    /* Kullanıcı Sorusu - Sağda */
-                    <div className="flex justify-end pr-4">
-                      <div className="bg-[#1c2938] text-white p-4 rounded-[20px] max-w-[60%]">
-                        {msg.image && (
-                          <div className="mb-2">
-                            <Image 
-                              src={msg.image} 
-                              alt="Yüklenen görsel" 
-                              width={200}
-                              height={150}
-                              className="object-cover rounded-lg" 
-                            />
-                          </div>
-                        )}
-                        {msg.text && (
-                          <div className="whitespace-pre-wrap text-sm">{msg.text}</div>
-                        )}
+                <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  
+                  {/* AI Avatar */}
+                  {msg.sender === 'assistant' && (
+                    <div className="flex-shrink-0 mr-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
                       </div>
                     </div>
-                  ) : (
-                    /* AI Cevabı - Solda */
-                    <div className="flex justify-start pl-4">
-                      <div className="bg-[#1c2938] text-white p-4 rounded-[20px] max-w-[70%]">
-                        {msg.text && (
-                          <div className="whitespace-pre-wrap text-sm">{msg.text}</div>
-                        )}
+                  )}
+
+                  {/* Message Bubble */}
+                  <div className={`max-w-[70%] ${msg.sender === 'user' ? 'order-1' : 'order-2'}`}>
+                    <div className={`px-4 py-3 rounded-2xl ${
+                      msg.sender === 'user' 
+                        ? 'bg-blue-500 text-white rounded-br-md' 
+                        : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md'
+                    }`}>
+                      
+                      {/* Image */}
+                      {msg.image && (
+                        <div className="mb-3">
+                          <Image 
+                            src={msg.image} 
+                            alt="Yüklenen görsel" 
+                            width={200}
+                            height={150}
+                            className="object-cover rounded-lg" 
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Text */}
+                      {msg.text && (
+                        <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                          {msg.text}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Timestamp */}
+                    <div className={`text-xs text-gray-400 mt-1 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
+                      {msg.timestamp.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+
+                  {/* User Avatar */}
+                  {msg.sender === 'user' && (
+                    <div className="flex-shrink-0 ml-3 order-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                       </div>
                     </div>
                   )}
                 </div>
               ))}
               
+              {/* Typing Indicator */}
               {isLoading && (
-                <div className="mb-6 mt-6">
-                  <div className="bg-[#1c2938] text-white p-4 rounded-[20px] max-w-[70%] mr-auto">
+                <div className="flex justify-start">
+                  <div className="flex-shrink-0 mr-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm border border-gray-100">
                     <div className="flex items-center space-x-2">
                       <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                       </div>
-                      <span className="text-gray-200 text-sm">Yazıyor...</span>
+                      <span className="text-gray-500 text-sm">Yazıyor...</span>
                     </div>
                   </div>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

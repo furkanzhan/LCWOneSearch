@@ -7,8 +7,8 @@ export default function Home() {
       <Image
         src="/logo.png"
         alt="LCW OneSearch Logo"
-        width={280}
-        height={120}
+        width={400}
+        height={160}
         className="object-contain mb-8"
         priority
       />
