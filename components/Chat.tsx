@@ -37,7 +37,29 @@ export default function Chat() {
       // Prepare messages for API call
       const apiMessages: ChatMessage[] = [
         createSystemMessage(
-          'Sen LC Waikiki OneSearch\'ün AI asistanısın. Kullanıcılara ürün arama, moda önerileri ve alışveriş konularında yardım ediyorsun. Türkçe yanıt ver ve samimi, dostane bir ton kullan.'
+          `Sen LC Waikiki OneSearch asistanısın. LC Waikiki ofisinde çalışan personele yardım ediyorsun.
+
+GÖREVIN:
+• LC Waikiki çalışanlarına günlük iş süreçlerinde destek olmak
+• Ürün takibi konularında yardım etmek
+• Dosya takibi ve organizasyon konularında rehberlik etmek
+• İş süreçleri hakkında bilgi vermek
+• Genel ofis ve iş ile ilgili soruları yanıtlamak
+
+YANIT STİLİN:
+• Profesyonel ve yardımsever ol
+• Türkçe yanıt ver
+• Kısa ve net açıklamalar yap
+• İş odaklı çözümler sun
+• Samimi ama profesyonel bir ton kullan
+
+KARŞILAMA:
+• Kullanıcı "merhaba" veya benzeri selamlama yaptığında: "LC Waikiki - One Search'e hoşgeldin. Sana bugün nasıl yardımcı olabilirim?" diye karşıla
+
+VEDA:
+• Konuşma bittiğinde veya kullanıcı teşekkür ettiğinde "İyi çalışmalar!" diye bitir
+
+Sen LC Waikiki ofis personelinin günlük iş süreçlerinde yanında olan asistanısın.`
         ),
         // Add all previous text messages to maintain context
         ...messages.filter(msg => msg.text).map((msg) => ({
@@ -100,7 +122,7 @@ export default function Chat() {
           <ChatInput 
             onSend={sendMessageToOpenAI} 
             disabled={isLoading} 
-            placeholder="Ne arıyorsunuz?" 
+            placeholder="Size nasıl yardımcı olabilirim?" 
           />
         </div>
       </div>
@@ -112,9 +134,9 @@ export default function Chat() {
         <div className="bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">LCW OneSearch AI</h2>
+              <h2 className="text-lg font-semibold text-gray-800">LC Waikiki OneSearch Asistan</h2>
               <p className="text-sm text-gray-500">
-                {isLoading ? 'Yazıyor...' : 'Çevrimiçi'}
+                {isLoading ? 'Yazıyor...' : 'Ofis personeli için yardımcı asistan'}
               </p>
             </div>
             {messages.length > 0 && (
@@ -135,11 +157,33 @@ export default function Chat() {
             <div className="flex flex-col items-center justify-center h-full text-center py-16">
               <div className="bg-blue-50 p-6 rounded-full mb-4">
                 <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
                 </svg>
               </div>
-              <h3 className="text-xl font-medium text-gray-700 mb-2">Merhaba! Size nasıl yardımcı olabilirim?</h3>
-              <p className="text-gray-500">Ürün arama yapabilir, moda önerileri alabilir ve sorularınızı sorabilirsiniz.</p>
+              <h3 className="text-xl font-medium text-gray-700 mb-2">LC Waikiki OneSearch Asistan</h3>
+              <p className="text-gray-500">Ürün takibi, dosya yönetimi ve iş süreçleri için yardımcınız</p>
+              
+              {/* Öneri Butonları */}
+              <div className="mt-6 flex flex-wrap gap-3 justify-center">
+                <button 
+                  onClick={() => sendMessageToOpenAI({ text: 'Merhaba' })}
+                  className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+                >
+                  👋 Merhaba
+                </button>
+                <button 
+                  onClick={() => sendMessageToOpenAI({ text: 'Ürün takibi nasıl yapılır?' })}
+                  className="px-4 py-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors"
+                >
+                  📦 Ürün Takibi
+                </button>
+                <button 
+                  onClick={() => sendMessageToOpenAI({ text: 'Dosya yönetimi hakkında bilgi' })}
+                  className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full hover:bg-yellow-200 transition-colors"
+                >
+                  📁 Dosya Yönetimi
+                </button>
+              </div>
             </div>
           ) : (
             /* Mesajlar */
@@ -152,7 +196,7 @@ export default function Chat() {
                     <div className="flex-shrink-0 mr-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
                         </svg>
                       </div>
                     </div>
@@ -212,7 +256,7 @@ export default function Chat() {
                   <div className="flex-shrink-0 mr-3">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
                       </svg>
                     </div>
                   </div>
